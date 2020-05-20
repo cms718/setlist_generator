@@ -1,0 +1,13 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'generator/style.css' %}">
+
+{% if band_list %}
+    <ul>
+    {% for band in band_list %}
+        <li><a href="{% url 'bandsongs' band.id %}">{{ band.band_name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No people are available.</p>
+{% endif %}

@@ -1,0 +1,9 @@
+{% if setlist %}
+    <ul>
+    {% for song in setlist %}
+        <li>{{ song.title }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No songs are available.</p>
+{% endif %}
