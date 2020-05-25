@@ -1,8 +1,15 @@
-{% if setlist %}
+{% if setlists %}
     <ul>
-    {% for song in setlist %}
-        <li>{{ song.title }}</li>
+    <h2>Setlist 1</h2>
+    {% for song in setlists.setlist1 %}
+        <li>{{ song.title }} - {{song.song_key}}</li>
     {% endfor %}
+    </ul>
+    <h2>Setlist 2</h2>
+    <ul>
+        {% for song in setlists.setlist2 %}
+            <li>{{ song.title }} - {{song.song_key}}</li>
+        {% endfor %}
     </ul>
 {% else %}
     <p>No songs are available.</p>

@@ -18,12 +18,10 @@ class Song(models.Model):
     bpm = models.IntegerField()
     is_encore = models.BooleanField('encore', default=False)
     song_key = models.CharField(max_length=5)
+    is_slow_song = models.BooleanField('slow song', default=False)
 
     def __str__(self):
         return self.title
-
-    def is_slow(self):
-        return self.bpm < 100
 
 class BandMember(models.Model):
     band = models.ForeignKey(Band, on_delete=models.CASCADE)
