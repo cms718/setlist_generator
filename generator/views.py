@@ -1,11 +1,14 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
-from django.views import generic
-# Create your views here.
 import random
 import math
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import JSONParser
+from django.views import generic
+from rest_framework import viewsets
+from .api.serializers import BandSerializer, SongSerializer, BandMemberSerializer
 from .models import Band, BandMember, Song
+# Create your views here.
 
 #function to find a list songs in the next possible song_key
 def sort_by_key(list_of_songs, num_songs, start_key):
@@ -31,7 +34,6 @@ class IndexView(generic.ListView):
     context_object_name = 'band_list'
 
     def get_queryset(self):
-        """Returns ordered first 5 persons by pk."""
         return Band.objects.all()
 
 class BandSongsView(generic.ListView):
@@ -40,14 +42,13 @@ class BandSongsView(generic.ListView):
 
     def get_queryset(self):
         self.band = get_object_or_404(Band, id=self.kwargs['band_id'])
-        # return Song.objects.filter(band=self.band)
         return {
             "songs": Song.objects.filter(band=self.band),
             "band": self.band
         }
 
 
-#TODO seperate into two setlists - choose opening songs for both sets
+#TODO choose opening songs for both sets
 #generate setlist from indexview by clicking on the band 
 
 class SetlistView(generic.ListView):
@@ -84,14 +85,53 @@ class SetlistView(generic.ListView):
             "setlist2": setlist_2
             }
 
+################################################--FIGURING OUT SERIALIZERS---#################################################
+@csrf_exempt
+def band_list(request):
+    """
+    List all Bands, or create a new Band.
+    """
+    if request.method == 'GET':
+        bands = Band.objects.all()
+        serialized_bands = BandSerializer(bands, many=True)
+        return JsonResponse(serializer.data, safe=False)
 
-class GenerateView(generic.ListView):
-    template_name = 'generate.html'
-    context_object_name = 'context'
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = BandSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
 
-    def get_queryset(self):
-        self.band = get_object_or_404(Band, id=self.kwargs['band_id'])
-        return {
-            "songs": Song.objects.filter(band=self.band),
-            "band": self.band
+@csrf_exempt
+def band_detail(request, band_id):
+    """
+    Retrieve, update or delete a band.
+    """
+    try:
+        band = Band.objects.get(id=band_id)
+        songs = Song.objects.filter(band=band_id)
+        band_members = BandMember.objects.filter(band=band_id)
+    except Band.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == 'GET':
+        responses = {
+            'band': BandSerializer(band).data,
+            'songs': list(map(lambda song: SongSerializer(song).data, songs)),
+            'band_members': list(map(lambda member: BandMemberSerializer(member).data, band_members))
         }
+        return JsonResponse(responses)
+
+    elif request.method == 'PUT':
+        data = JSONParser().parse(request)
+        serializer = BandSerializer(band, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        band.delete()
+        return HttpResponse(status=204)

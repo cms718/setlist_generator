@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-class Band (models.Model):
+class Band(models.Model):
     band_name = models.CharField(max_length=40)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
 
