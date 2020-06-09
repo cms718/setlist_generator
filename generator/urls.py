@@ -10,4 +10,5 @@ urlpatterns = [
     ###########---NEW VIEW---###############
     path('band/', views.band_list),
     path('band/<int:band_id>', views.band_detail),
+    path('generate_setlist', views.generate_setlist)
 ]

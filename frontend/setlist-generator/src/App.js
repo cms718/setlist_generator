@@ -1,60 +1,31 @@
 import React, { Component } from "react";
 import "./App.css";
-import Songs from "./components/SongList.js";
-import AddSong from "./components/AddSong.js";
+import GenerateSetlist from "./components/GenerateSetlist.js";
 import Header from "./components/layout/Header.js";
-//rce-tab generates component
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import Setlist from "./components/Setlist";
+//rcc-tab generates component
 class App extends Component {
-  state = {
-    songs: [
-      {
-        id: 1,
-        title: "Song1",
-        artist: "example artist",
-        isSlow: true,
-        isWeaker: false,
-      },
-      {
-        id: 2,
-        title: "Song2",
-        artist: "example artist2",
-        isSlow: false,
-        isWeaker: true,
-      },
-    ],
-  };
-
-  //toggle isWeaker  DOESNT WORK
-  makeStronger = (id) => {
-    this.setState({
-      songs: this.state.songs.map((song) => {
-        if (song.id === id) {
-          song.isWeaker = !song.isWeaker;
-        }
-        return song;
-      }),
-    });
-  };
-
-  addSong = (title, isWeaker) => {
-    const newSong = {
-      title,
-      isWeaker,
-    };
-    console.log({ newSong });
-
-    this.setState({
-      songs: [...this.state.songs, newSong],
-    });
-  };
+  state = {};
 
   render() {
     return (
-      <div className="App">
-        <Header />
-        <AddSong addSong={this.addSong} />
-        <Songs songs={this.state.songs} makeStronger={this.makeStronger} />
-      </div>
+      <Router>
+        <div className="App">
+          <Header />
+          <GenerateSetlist
+            onSetlistGenerated={(data) => {
+              this.setState(data);
+            }}
+          />
+          {this.state.band && (
+            <Setlist
+              setlistOne={this.state.setlist_one}
+              setlistTwo={this.state.setlist_two}
+            />
+          )}
+        </div>
+      </Router>
     );
   }
 }

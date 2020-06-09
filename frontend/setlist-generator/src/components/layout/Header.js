@@ -3,7 +3,7 @@ import React from "react";
 export default function Header() {
   return (
     <header style={headerStyle}>
-      <h1>Add Songs</h1>
+      <h1>Setlist Generator</h1>
     </header>
   );
 }
