@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
 
 const initialState = {
   numSongs: 0,
@@ -21,12 +20,10 @@ class GenerateSetlist extends Component {
   onSubmit = async (event) => {
     event.preventDefault();
     const queryString = `numSongs=${this.state.numSongs}&numSlowSongs=${this.state.numSlowSongs}&numEncores=${this.state.numEncores}&setOneOpener=${this.state.setOneOpener}&setTwoOpener=${this.state.setTwoOpener}`;
-    //this.props.history.push(`/songlist?${queryString}`);
     const response = await fetch(
       `http://localhost:8000/generator/generate_setlist?${queryString}`
     );
     const data = await response.json();
-    console.log(data);
     this.props.onSetlistGenerated(data);
     //this.setState(initialState);
   };
@@ -98,4 +95,4 @@ class GenerateSetlist extends Component {
     );
   }
 }
-export default withRouter(GenerateSetlist);
+export default GenerateSetlist;

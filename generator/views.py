@@ -131,6 +131,7 @@ def band_detail(request, band_id):
         band.delete()
         return HttpResponse(status=204)
 
+#TODO add default params and error handling
 def generate_setlist(request):
     try:
         num_songs = int(request.GET['numSongs'])
@@ -140,21 +141,21 @@ def generate_setlist(request):
         start_song = list(Song.objects.filter(title=set_one_opener))
         set_two_opener = request.GET['setTwoOpener']
         start_song_two = list(Song.objects.filter(title=set_two_opener))
-        #ID is hardcoded
+        #ID is hardcoded for TEST BAND
         band = get_object_or_404(Band, id=4)
         band_members = BandMember.objects.filter(band=band)
-        shuffled_songs = sorted(Song.objects.filter(band=band).order_by('id')[:], key=lambda x: random.random())
+        shuffled_songs = sorted(Song.objects.filter(band=band).exclude(title=set_one_opener).exclude(title=set_two_opener).order_by('id')[:], key=lambda x: random.random())
         start_song_key = Song.objects.values_list('song_key', flat=True).get(title=set_one_opener)
         set_two_start_key = Song.objects.values_list('song_key', flat=True).get(title=set_two_opener)
 
         setlist_1_length = math.floor(num_songs / 2)
         setlist_2_length = math.ceil(num_songs / 2)
 
+        #need to make list because filter is not subscriptable
         list_of_slow_songs = list(filter(lambda song: song.is_slow_song == True and song.is_encore == False, shuffled_songs))
         list_of_songs = list(filter(lambda song: song.is_encore == False and song.is_slow_song == False, shuffled_songs))
         list_of_encores = list(filter(lambda song: song.is_encore == True, shuffled_songs))
 
-        #need to make list because filter is not subscriptable
         slow_songs = sort_by_key(list_of_slow_songs, num_slow_songs, start_song_key)
         set_1_songs = sort_by_key(list_of_songs, (setlist_1_length - num_slow_songs - 1), slow_songs[-1].song_key)
         setlist_1 = start_song + slow_songs + set_1_songs
@@ -163,11 +164,14 @@ def generate_setlist(request):
         encores = sort_by_key(list_of_encores, num_encores, set_2_songs[-1].song_key)
         setlist_2 = start_song_two + set_2_songs + encores
 
+        reserve_songs = [song for song in shuffled_songs if song not in setlist_1 if song not in setlist_2]
+
         responses = {
             'band': BandSerializer(band).data,
             'setlist_one': list(map(lambda song: SongSerializer(song).data, setlist_1)),
             'setlist_two': list(map(lambda song: SongSerializer(song).data, setlist_2)),
-            'band_members': list(map(lambda member: BandMemberSerializer(member).data, band_members))
+            'band_members': list(map(lambda member: BandMemberSerializer(member).data, band_members)),
+            'reserve_songs': list(map(lambda song: SongSerializer(song).data, reserve_songs))
         }
         return JsonResponse(responses)
 
