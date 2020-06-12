@@ -14,7 +14,7 @@ const Container = styled.div`
 //style containers
 //add save button
 //add band-name param for GenerateSetlist
-//change keys to include major and minor.
+//clean the backend with unused views etc.
 class App extends Component {
   state = {
     columns: {
